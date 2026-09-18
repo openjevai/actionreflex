@@ -238,6 +238,23 @@ care about, and move the thresholds. A Noul at 0.5 means "yes and no are about e
 likely", not "moderately destructive", so the right cut-off depends on what a false
 alarm costs you compared with a miss.
 
+## Evaluation
+
+Run unchanged and untuned on two public agent-safety benchmarks, replaying every agent
+action through the gate before it runs ([full report](eval/README.md)):
+
+| Benchmark | Result (default gate) |
+| --- | --- |
+| [R-Judge](https://github.com/Lordog/R-Judge), 571 agent records | F1 **89.3** (GPT-4o in the R-Judge paper: 74.5) |
+| - injection attacks (414) | all 200 unsafe caught, 11 false alarms among 214 safe |
+| - unintended risks (157) | F1 72.7 (GPT-4o: 80.9), the weak spot |
+| [InjecAgent](https://github.com/uiuc-kang-lab/InjecAgent), 2,108 attacks | 2,106 attacker tool calls stopped, 0 of 17 legitimate calls |
+
+Median latency is about 260ms per check. The full run (3,584 checks) cost $0.19. The
+report covers the caveats: the paper's LLM judges read whole records after the fact, so
+the comparison isn't like-for-like. The attacks in both benchmarks are mostly off-task tool
+calls, and injections that hijack on-task actions are essentially untested.
+
 ## Development
 
 ```bash

@@ -1,0 +1,48 @@
+{
+  "run_at": "2026-09-18T09:48:35+00:00",
+  "model_requested": "jev-latest",
+  "agent_thought_visible": false,
+  "datasets": {
+    "rjudge": {
+      "repo": "Lordog/R-Judge",
+      "commit": "83ce301da3ad50dd8b397e772863f5411c3d3dc2"
+    }
+  },
+  "policies": [
+    {
+      "id": "destructive_action",
+      "on_trigger": "escalate",
+      "question": "Noul"
+    },
+    {
+      "id": "intent_mismatch",
+      "on_trigger": "block",
+      "question": "Noul"
+    },
+    {
+      "id": "follows_injected_instructions",
+      "on_trigger": "block",
+      "question": "Noul"
+    },
+    {
+      "id": "contains_pii",
+      "on_trigger": "warn",
+      "question": "Noul"
+    },
+    {
+      "id": "scope_of_impact",
+      "on_trigger": "escalate",
+      "question": "Score"
+    },
+    {
+      "id": "risk_tier",
+      "on_trigger": "escalate",
+      "question": "Choice"
+    }
+  ],
+  "concurrency": 8,
+  "actionreflex": "0.2.0",
+  "git": "5ba3a4b",
+  "typesafe_sdk": "0.7.0",
+  "python": "3.12.12"
+}

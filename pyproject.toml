@@ -45,6 +45,7 @@ packages = ["src/actionreflex"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 asyncio_mode = "auto"
 markers = [
     "integration: makes real calls to the TypeSafe API (needs TYPESAFE_API_KEY)",
