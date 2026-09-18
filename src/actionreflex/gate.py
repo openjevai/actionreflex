@@ -147,6 +147,7 @@ class Gate(_GateBase):
             answers=response.answers,
             latency_ms=latency_ms,
             usage=response.usage,
+            model=response.model,
         )
 
     def guard(
@@ -250,6 +251,7 @@ class AsyncGate(_GateBase):
             answers=response.answers,
             latency_ms=latency_ms,
             usage=response.usage,
+            model=response.model,
         )
 
     def guard(

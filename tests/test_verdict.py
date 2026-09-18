@@ -70,9 +70,11 @@ def test_usage_and_latency_are_carried_through():
         {"destructive_action": NoulAnswer(noul=0.1)},
         latency_ms=112.5,
         usage=Usage(input_tokens=240, output_tokens=0),
+        model="jev-1.13.0",
     )
     assert verdict.latency_ms == 112.5
     assert verdict.usage.input_tokens == 240
+    assert verdict.model == "jev-1.13.0"
 
 
 def test_missing_answer_is_an_explicit_error():

@@ -102,6 +102,7 @@ def test_usage_and_latency_are_reported(gate):
     assert verdict.usage is not None
     assert verdict.usage.input_tokens and verdict.usage.input_tokens > 0
     assert verdict.latency_ms > 0
+    assert verdict.model and verdict.model.startswith("jev")
 
 
 def test_per_call_policy_override():

@@ -49,6 +49,9 @@ class Verdict:
     latency_ms: float = 0.0
     usage: Usage | None = None
     error: Exception | None = None
+    model: str | None = None
+    """The concrete model that answered (e.g. "jev-1.13.0"), even when you asked for
+    an alias like "jev-latest". Worth logging alongside decisions."""
 
     @property
     def allowed(self) -> bool:
@@ -70,6 +73,7 @@ class Verdict:
         answers: dict[str, Any],
         latency_ms: float = 0.0,
         usage: Usage | None = None,
+        model: str | None = None,
     ) -> Verdict:
         """Fold Jev's answers into a decision.
 
@@ -108,6 +112,7 @@ class Verdict:
             results=results,
             latency_ms=latency_ms,
             usage=usage,
+            model=model,
         )
 
     def __repr__(self) -> str:
