@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "actionreflex"
-version = "0.1.0"
-description = "A pre-execution gate for AI agent actions, powered by TypeSafe's System One (Jev) model."
+version = "0.2.0"
+description = "Check every action your AI agent takes before it runs, using TypeSafe's Jev model."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -21,10 +21,12 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "typesafe-sdk>=0.1.0",
+    # Pre-1.0 SDK: pinned to the minor versions this release is verified against.
+    "typesafe-sdk>=0.6,<0.8",
 ]
 
 [project.optional-dependencies]
@@ -44,6 +46,9 @@ packages = ["src/actionreflex"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "integration: makes real calls to the TypeSafe API (needs TYPESAFE_API_KEY)",
+]
 
 [tool.ruff]
 line-length = 100

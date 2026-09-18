@@ -10,12 +10,28 @@ class ActionReflexError(Exception):
     """Base class for actionreflex errors."""
 
 
+class MissingAnswer(ActionReflexError):
+    """Jev returned no answer for a policy that was asked about."""
+
+
+class GateUnavailable(ActionReflexError):
+    """The gate could not reach a decision because the TypeSafe call failed.
+
+    Raised when `on_error="raise"` (the default). The underlying
+    `typesafe_sdk` exception is available as `__cause__`, and as `.cause`.
+    """
+
+    def __init__(self, message: str, cause: BaseException | None = None):
+        super().__init__(message)
+        self.cause = cause
+
+
 class ActionBlocked(ActionReflexError):
     """Raised by `Gate.guard` (default behavior) when a policy blocks the action."""
 
     def __init__(self, verdict: Verdict):
         self.verdict = verdict
-        reasons = "; ".join(r.reason for r in verdict.triggered_results) or "no reason given"
+        reasons = "; ".join(verdict.reasons) or "no reason given"
         super().__init__(f"Action '{verdict.action.name}' blocked: {reasons}")
 
 
@@ -25,5 +41,5 @@ class ActionEscalated(ActionReflexError):
 
     def __init__(self, verdict: Verdict):
         self.verdict = verdict
-        reasons = "; ".join(r.reason for r in verdict.triggered_results) or "no reason given"
+        reasons = "; ".join(verdict.reasons) or "no reason given"
         super().__init__(f"Action '{verdict.action.name}' needs review: {reasons}")
