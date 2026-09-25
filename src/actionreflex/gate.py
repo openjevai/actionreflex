@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
+import os
 import time
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Literal
@@ -19,6 +20,62 @@ if TYPE_CHECKING:
 ErrorMode = Literal["raise", "fail_closed", "fail_open"]
 
 DEFAULT_MODEL = "jev-latest"
+
+# --- Optional OpenJEV support (TypeSafe stays the default) -------------------
+# OpenJEV (https://openjev.sh) is a free community gateway to the same Jev model
+# built by TypeSafe. It speaks the same /v1/systemone contract, so the only
+# differences are the base URL, the model id, and the API-key environment variable.
+# TypeSafe remains the default; OpenJEV is used only when explicitly chosen or
+# when no TypeSafe key is present but an OpenJEV key is.
+OPENJEV_BASE_URL = "https://api.openjev.sh"
+OPENJEV_MODEL = "openjev"
+OPENJEV_API_KEY_ENV = "OPENJEV_API_KEY"
+PROVIDER_ENV = "JEV_PROVIDER"
+
+Provider = Literal["typesafe", "openjev"]
+
+
+def _resolve_provider(provider: str | None, api_key: str | None) -> Provider:
+    """Pick which gateway to talk to.
+
+    1. An explicit ``provider`` (or ``JEV_PROVIDER`` env) always wins.
+    2. Otherwise TypeSafe is the default whenever a TypeSafe key is available
+       (or an ``api_key`` was passed in), so existing users see no change.
+    3. Otherwise, if only an OpenJEV key is set, use OpenJEV.
+    """
+    explicit = (provider or os.environ.get(PROVIDER_ENV, "")).strip().lower()
+    if explicit:
+        if explicit not in ("typesafe", "openjev"):
+            raise ValueError(f"Unknown provider {explicit!r}; expected 'typesafe' or 'openjev'.")
+        return explicit  # type: ignore[return-value]
+    if api_key is not None or os.environ.get("TYPESAFE_API_KEY", "").strip():
+        return "typesafe"
+    if os.environ.get(OPENJEV_API_KEY_ENV, "").strip():
+        return "openjev"
+    # Nothing set: fall back to TypeSafe so the SDK raises its usual "no key" error.
+    return "typesafe"
+
+
+def _client_kwargs(
+    provider: Provider,
+    api_key: str | None,
+    timeout: float | None,
+    retry: RetryPolicy | None,
+) -> dict[str, Any]:
+    """Build keyword arguments for ``TypeSafeClient`` / ``AsyncTypeSafeClient``."""
+    if provider == "openjev":
+        return {
+            "api_key": api_key if api_key is not None else os.environ.get(OPENJEV_API_KEY_ENV),
+            "base_url": OPENJEV_BASE_URL,
+            "timeout": timeout,
+            "retry": retry,
+        }
+    return {"api_key": api_key, "timeout": timeout, "retry": retry}
+
+
+def _default_model_for(provider: Provider) -> str:
+    """The model id to send when the caller did not choose one explicitly."""
+    return OPENJEV_MODEL if provider == "openjev" else DEFAULT_MODEL
 
 
 class _GateBase:
@@ -94,7 +151,10 @@ class Gate(_GateBase):
             if verdict.allowed:
                 ...
 
-    Auth comes from `api_key`, or from `TYPESAFE_API_KEY` in the environment.
+    Auth comes from `api_key`, or from `TYPESAFE_API_KEY` in the environment. To
+    route checks through the free [OpenJEV](https://openjev.sh) community gateway
+    instead, pass `provider="openjev"` (or set `JEV_PROVIDER=openjev` / only
+    `OPENJEV_API_KEY`); TypeSafe stays the default.
 
     `on_error` decides what happens when the TypeSafe call itself fails (network
     error, rate limit, auth problem) - a real decision you should make deliberately:
@@ -119,13 +179,19 @@ class Gate(_GateBase):
         client: TypeSafeClient | None = None,
         timeout: float | None = None,
         retry: RetryPolicy | None = None,
-    ):
+        provider: str | None = None,
+    ) -> None:
+        resolved = _resolve_provider(provider, api_key)
+        # Use the model id that matches the gateway when the caller left it at the
+        # default ("jev-latest" → "openjev" for OpenJEV); an explicit model is kept.
+        if model is DEFAULT_MODEL:
+            model = _default_model_for(resolved)
         super().__init__(policies, model=model, on_error=on_error)
         if client is not None:
             self._client = client
             self._owns_client = False
         else:
-            self._client = TypeSafeClient(api_key=api_key, timeout=timeout, retry=retry)
+            self._client = TypeSafeClient(**_client_kwargs(resolved, api_key, timeout, retry))
             self._owns_client = True
 
     @property
@@ -223,13 +289,17 @@ class AsyncGate(_GateBase):
         client: AsyncTypeSafeClient | None = None,
         timeout: float | None = None,
         retry: RetryPolicy | None = None,
-    ):
+        provider: str | None = None,
+    ) -> None:
+        resolved = _resolve_provider(provider, api_key)
+        if model is DEFAULT_MODEL:
+            model = _default_model_for(resolved)
         super().__init__(policies, model=model, on_error=on_error)
         if client is not None:
             self._client = client
             self._owns_client = False
         else:
-            self._client = AsyncTypeSafeClient(api_key=api_key, timeout=timeout, retry=retry)
+            self._client = AsyncTypeSafeClient(**_client_kwargs(resolved, api_key, timeout, retry))
             self._owns_client = True
 
     @property

@@ -56,6 +56,8 @@ def test_check_requires_at_least_one_policy():
 
 def test_missing_api_key_fails_at_construction(monkeypatch):
     monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
+    monkeypatch.delenv("OPENJEV_API_KEY", raising=False)
+    monkeypatch.delenv("JEV_PROVIDER", raising=False)
     with pytest.raises(TypeSafeError, match="API key"):
         Gate([destructive_action()])
 

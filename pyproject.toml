@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     { name = "Ali Nabipour" }
 ]
-keywords = ["ai-agents", "guardrails", "llm", "agent-safety", "typesafe", "jev"]
+keywords = ["ai-agents", "guardrails", "llm", "agent-safety", "typesafe", "jev", "openjev"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

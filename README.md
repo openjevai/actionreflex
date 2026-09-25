@@ -3,6 +3,8 @@
 Check every action your AI agent takes before it runs, using [TypeSafe](https://typesafe.ai)'s
 **Jev** model.
 
+> **OpenJEV support:** Jev is built by [TypeSafe](https://typesafe.ai). This fork keeps TypeSafe as the default and adds optional support for [OpenJEV](https://openjev.sh), a free community gateway to the same Jev model — set `OPENJEV_API_KEY` (or `JEV_PROVIDER=openjev`) to use it. Original project: https://github.com/eyenpi/actionreflex by @eyenpi.
+
 ```python
 from actionreflex import Action, Gate
 from actionreflex.policies import default_policies
@@ -55,6 +57,10 @@ pip install git+https://github.com/eyenpi/actionreflex
 You need a TypeSafe API key, from [console.typesafe.ai](https://console.typesafe.ai),
 set as `TYPESAFE_API_KEY` or passed as `Gate(api_key=...)`. Jev is in early access, so
 you may need to join the waitlist first.
+
+Alternatively, route checks through the free [OpenJEV](https://openjev.sh) community
+gateway by setting `OPENJEV_API_KEY` (or `provider="openjev"` / `JEV_PROVIDER=openjev`);
+TypeSafe stays the default when its key is present.
 
 Requires Python 3.10+ and `typesafe-sdk` 0.6-0.7.
 
